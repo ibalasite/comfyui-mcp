@@ -1,0 +1,6 @@
+output/
+audio_server.log
+runner.log
+__pycache__/
+*.pyc
+.claude/

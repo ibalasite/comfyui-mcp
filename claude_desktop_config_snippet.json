@@ -1,0 +1,16 @@
+{
+  "_comment": "Merge this block into your Claude Desktop config at:",
+  "_path_windows": "%APPDATA%\\Claude\\claude_desktop_config.json",
+  "mcpServers": {
+    "local-media-gen": {
+      "command": "python",
+      "args": ["C:/comfyuimcp/mcp_server.py"],
+      "env": {
+        "COMFYUI_URL": "http://127.0.0.1:8188",
+        "AUDIO_URL": "http://127.0.0.1:8189",
+        "OUTPUT_DIR": "C:/comfyuimcp/output",
+        "COMFYUI_POLL_TIMEOUT": "120"
+      }
+    }
+  }
+}
