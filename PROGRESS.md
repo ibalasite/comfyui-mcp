@@ -31,7 +31,7 @@
 | # | 任務 | 狀態 | 備註 |
 |---|---|---|---|
 | 2.1 | `pip install -r requirements.txt` | ✅ 完成 | setuptools 先升級修復後成功 |
-| 2.2 | Clone ComfyUI 到 `C:\ComfyUI` | ✅ 完成 | |
+| 2.2 | Clone ComfyUI 到 `C:\Projects\ComfyUI` | ✅ 完成 | |
 | 2.3 | 安裝 ComfyUI Python 依賴 | ✅ 完成 | torch 2.11、transformers 5.7 等 |
 | 2.4 | 確認 SDXL 模型存在，否則記錄下載連結 | ✅ 完成 | 6.5GB 下載完成，2515 keys 驗證通過 |
 | 2.5 | 將 MCP config 合併寫入 Claude Desktop config | ✅ 完成 | local-media-gen 已寫入 |
@@ -56,7 +56,7 @@
 
 > Agent 執行規則：每個子任務都要真正呼叫 ComfyUI / AudioLDM2 API 生成檔案，
 > 確認檔案存在且大小合理（圖片 > 50KB，音訊 > 10KB），才算通過。
-> 生成的檔案統一存到 `C:/comfyuimcp/output/test/`。
+> 生成的檔案統一存到 `C:/Projects/comfyuimcp/output/test/`。
 
 ### 4.1 — 遊戲頭像組（圖片）
 用 ComfyUI SDXL，批次生成 4 張 512×512 遊戲角色頭像，風格各異。

@@ -4,8 +4,8 @@
 
 set TASK_NAME=ComfyUIMCP-AutoRunner
 set PYTHON=python
-set SCRIPT=C:\comfyuimcp\auto_runner.py
-set LOG=C:\comfyuimcp\runner.log
+set SCRIPT=C:\Projects\comfyuimcp\auto_runner.py
+set LOG=C:\Projects\comfyuimcp\runner.log
 
 echo [*] 建立排程任務: %TASK_NAME%
 

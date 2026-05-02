@@ -43,18 +43,18 @@ pip install -r requirements.txt
 ### 2. 安裝 ComfyUI
 
 ```bash
-git clone https://github.com/comfyanonymous/ComfyUI C:/ComfyUI
-pip install -r C:/ComfyUI/requirements.txt
+git clone https://github.com/comfyanonymous/ComfyUI C:/Projects/ComfyUI
+pip install -r C:/Projects/ComfyUI/requirements.txt
 ```
 
 ### 3. 模型檔案
 
 | 模型 | 路徑 | 大小 |
 |---|---|---|
-| [SDXL base 1.0](https://huggingface.co/stabilityai/stable-diffusion-xl-base-1.0) | `C:\ComfyUI\models\checkpoints\` | 6.5 GB |
-| [Flux.1-schnell Q4_K_S](https://huggingface.co/city96/FLUX.1-schnell-gguf) | `C:\ComfyUI\models\unet\` | 6.4 GB |
-| [clip_l](https://huggingface.co/comfyanonymous/flux_text_encoders) | `C:\ComfyUI\models\clip\` | 235 MB |
-| [flux_ae (VAE)](https://huggingface.co/madebyollin/sdxl-vae-fp16-fix) | `C:\ComfyUI\models\vae\` | 320 MB |
+| [SDXL base 1.0](https://huggingface.co/stabilityai/stable-diffusion-xl-base-1.0) | `C:\Projects\ComfyUI\models\checkpoints\` | 6.5 GB |
+| [Flux.1-schnell Q4_K_S](https://huggingface.co/city96/FLUX.1-schnell-gguf) | `C:\Projects\ComfyUI\models\unet\` | 6.4 GB |
+| [clip_l](https://huggingface.co/comfyanonymous/flux_text_encoders) | `C:\Projects\ComfyUI\models\clip\` | 235 MB |
+| [flux_ae (VAE)](https://huggingface.co/madebyollin/sdxl-vae-fp16-fix) | `C:\Projects\ComfyUI\models\vae\` | 320 MB |
 
 ### 4. 設定 Claude Desktop
 
@@ -65,11 +65,11 @@ pip install -r C:/ComfyUI/requirements.txt
   "mcpServers": {
     "local-media-gen": {
       "command": "python",
-      "args": ["C:/comfyuimcp/mcp_server.py"],
+      "args": ["C:/Projects/comfyuimcp/mcp_server.py"],
       "env": {
         "COMFYUI_URL": "http://127.0.0.1:8188",
         "AUDIO_URL": "http://127.0.0.1:8189",
-        "OUTPUT_DIR": "C:/comfyuimcp/output"
+        "OUTPUT_DIR": "C:/Projects/comfyuimcp/output"
       }
     }
   }

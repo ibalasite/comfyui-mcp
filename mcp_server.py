@@ -19,7 +19,7 @@ from mcp.types import ImageContent, TextContent, Tool
 # ── Config ─────────────────────────────────────────────────────────────────────
 COMFYUI_URL = os.getenv("COMFYUI_URL", "http://127.0.0.1:8188")
 AUDIO_URL   = os.getenv("AUDIO_URL",   "http://127.0.0.1:8189")
-OUTPUT_DIR  = Path(os.getenv("OUTPUT_DIR", "C:/comfyuimcp/output"))
+OUTPUT_DIR  = Path(os.getenv("OUTPUT_DIR", "C:/Projects/comfyuimcp/output"))
 OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
 POLL_TIMEOUT = int(os.getenv("COMFYUI_POLL_TIMEOUT", "180"))
 

@@ -8,10 +8,10 @@ import subprocess
 import sys
 from pathlib import Path
 
-PROGRESS_FILE = Path("C:/comfyuimcp/PROGRESS.md")
+PROGRESS_FILE = Path("C:/Projects/comfyuimcp/PROGRESS.md")
 TASK_NAME = "ComfyUIMCP-AutoRunner"
 CLAUDE_PROMPT = (
-    "請讀取 C:/comfyuimcp/AGENTS.md 和 C:/comfyuimcp/PROGRESS.md，"
+    "請讀取 C:/Projects/comfyuimcp/AGENTS.md 和 C:/Projects/comfyuimcp/PROGRESS.md，"
     "找出所有狀態為「⏳ 待辦」的任務，從第一個開始依序自動執行，"
     "每完成一個立刻把 PROGRESS.md 的狀態改為「✅ 完成」並記錄到更新日誌，"
     "繼續執行下一個，直到所有任務完成或遇到需要人工處理的阻塞為止。"
@@ -37,7 +37,7 @@ def run_claude():
     print("[INFO] 發現未完成任務，啟動 Claude Code...")
     result = subprocess.run(
         ["claude", "--print", CLAUDE_PROMPT],
-        cwd="C:/comfyuimcp",
+        cwd="C:/Projects/comfyuimcp",
         capture_output=False,
         text=True,
     )

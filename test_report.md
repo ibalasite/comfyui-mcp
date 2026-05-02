@@ -52,7 +52,7 @@
 
 ## 輸出目錄
 
-所有檔案位於：`C:/comfyuimcp/output/test/`
+所有檔案位於：`C:/Projects/comfyuimcp/output/test/`
 
 ```
 output/test/

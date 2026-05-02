@@ -64,7 +64,7 @@ _patch_audioldm2_pipeline()
 
 from diffusers import AudioLDM2Pipeline  # noqa: E402 (import after patch)
 
-OUTPUT_DIR = Path(os.getenv("OUTPUT_DIR", "C:/comfyuimcp/output"))
+OUTPUT_DIR = Path(os.getenv("OUTPUT_DIR", "C:/Projects/comfyuimcp/output"))
 OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
 
 print("Loading AudioLDM2 pipeline...")
