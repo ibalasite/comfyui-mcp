@@ -102,21 +102,26 @@ pip install -r C:/Projects/ComfyUI/requirements.txt
 
 ```
 comfyuimcp/
-├── mcp_server.py          # MCP 主程式（4 個工具）
-├── audio_server.py        # AudioLDM2 FastAPI 服務
-├── healthcheck.py         # 健康檢查
-├── start_all.bat          # 一鍵啟動
-├── requirements.txt       # Python 依賴
-├── STARTUP.md             # 啟動指南
-├── MANUAL.md              # 使用手冊
-├── AGENTS.md              # Claude 自動作業規則
-└── PROGRESS.md            # 任務進度追蹤
+├── mcp_server.py                    # MCP 主程式（4 個工具）
+├── audio_server.py                  # AudioLDM2 FastAPI 服務
+├── auto_runner.py                   # 自動化執行腳本
+├── healthcheck.py                   # 健康檢查
+├── start_all.bat                    # 一鍵啟動（ComfyUI + AudioLDM2）
+├── start_servers.bat                # 快速啟動腳本
+├── setup_scheduler.bat              # Windows 排程器設定
+├── claude_desktop_config_snippet.json  # Claude Desktop MCP 設定範本
+├── requirements.txt                 # Python 依賴
+├── test_report.md                   # 功能測試報告
+├── STARTUP.md                       # 啟動指南
+├── MANUAL.md                        # 使用手冊
+├── AGENTS.md                        # Claude 自動作業規則
+└── PROGRESS.md                      # 任務進度追蹤
 ```
 
 ## 技術細節
 
 - **圖片**：ComfyUI API mode，workflow 以 JSON 動態組裝
-- **音效**：diffusers `AudioLDM2Pipeline`，已修補 transformers 4.57 相容性問題
+- **音效**：diffusers `AudioLDM2Pipeline`，已修補 transformers 4.40+ 相容性問題
 - **MCP**：`mcp>=1.0.0` stdio transport
 - **自動化**：AGENTS.md + PROGRESS.md 驅動 Claude 自動推進任務
 
