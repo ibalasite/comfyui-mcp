@@ -9,7 +9,8 @@
         "COMFYUI_URL": "http://127.0.0.1:8188",
         "AUDIO_URL": "http://127.0.0.1:8189",
         "OUTPUT_DIR": "C:/Projects/comfyuimcp/output",
-        "COMFYUI_POLL_TIMEOUT": "120"
+        "COMFYUI_POLL_TIMEOUT": "120",
+        "FREESOUND_API_KEY": "貼上你的_API_KEY"
       }
     }
   }

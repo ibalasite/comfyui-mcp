@@ -1,6 +1,6 @@
 """
 Local Media Generation MCP Server
-Exposes ComfyUI (image/img2img) and AudioLDM2 (audio) as Claude MCP tools.
+Exposes ComfyUI (image/img2img), AudioLDM2 (audio), and Freesound (sfx search/download) as Claude MCP tools.
 Supports: SDXL, Flux.1-schnell (GGUF), LoRA, batch, img2img, audio Base64.
 """
 
@@ -17,11 +17,13 @@ from mcp.server.stdio import stdio_server
 from mcp.types import ImageContent, TextContent, Tool
 
 # ── Config ─────────────────────────────────────────────────────────────────────
-COMFYUI_URL = os.getenv("COMFYUI_URL", "http://127.0.0.1:8188")
-AUDIO_URL   = os.getenv("AUDIO_URL",   "http://127.0.0.1:8189")
-OUTPUT_DIR  = Path(os.getenv("OUTPUT_DIR", "C:/Projects/comfyuimcp/output"))
+COMFYUI_URL       = os.getenv("COMFYUI_URL", "http://127.0.0.1:8188")
+AUDIO_URL         = os.getenv("AUDIO_URL",   "http://127.0.0.1:8189")
+OUTPUT_DIR        = Path(os.getenv("OUTPUT_DIR", "C:/Projects/comfyuimcp/output"))
 OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
-POLL_TIMEOUT = int(os.getenv("COMFYUI_POLL_TIMEOUT", "180"))
+POLL_TIMEOUT      = int(os.getenv("COMFYUI_POLL_TIMEOUT", "180"))
+FREESOUND_API_KEY = os.getenv("FREESOUND_API_KEY", "")
+FREESOUND_API     = "https://freesound.org/apiv2"
 
 FLUX_GGUF   = "flux1-schnell-Q4_K_S.gguf"   # in models/unet/
 SDXL_CKPT   = "sd_xl_base_1.0.safetensors"  # in models/checkpoints/
@@ -166,6 +168,48 @@ async def _audio_run(prompt: str, negative: str, duration: float, steps: int) ->
     return out, b64
 
 
+# ── Freesound ─────────────────────────────────────────────────────────────────
+
+async def _freesound_search(query: str, duration_max: float, license_filter: str, page_size: int) -> list[dict]:
+    params = {
+        "query": query,
+        "fields": "id,name,description,duration,license,previews,download,tags",
+        "page_size": page_size,
+        "token": FREESOUND_API_KEY,
+    }
+    filters = [f"duration:[0 TO {duration_max}]"]
+    if license_filter == "cc0":
+        filters.append('license:"Creative Commons 0"')
+    elif license_filter == "cc_by":
+        filters.append('license:("Creative Commons 0" OR "Attribution")')
+    params["filter"] = " ".join(filters)
+
+    async with httpx.AsyncClient(timeout=15) as c:
+        r = await c.get(f"{FREESOUND_API}/search/text/", params=params)
+        r.raise_for_status()
+        return r.json().get("results", [])
+
+
+async def _freesound_download(sound_id: int, filename: str) -> Path:
+    out = OUTPUT_DIR / f"sfx_{sound_id}_{filename}"
+    if out.exists():
+        return out
+    # Use preview (mp3) — no OAuth needed, available with API key
+    async with httpx.AsyncClient(timeout=60, follow_redirects=True) as c:
+        # Get sound detail to find preview URL
+        r = await c.get(f"{FREESOUND_API}/sounds/{sound_id}/",
+                        params={"token": FREESOUND_API_KEY,
+                                "fields": "previews"})
+        r.raise_for_status()
+        preview_url = r.json()["previews"]["preview-hq-mp3"]
+        audio = await c.get(preview_url)
+        audio.raise_for_status()
+    safe_name = f"sfx_{sound_id}_{filename[:40].replace('/', '_')}.mp3"
+    out = OUTPUT_DIR / safe_name
+    out.write_bytes(audio.content)
+    return out
+
+
 # ── MCP Server ────────────────────────────────────────────────────────────────
 
 app = Server("local-media-gen")
@@ -239,6 +283,40 @@ async def list_tools() -> list[Tool]:
             description="List recently generated files in the output folder.",
             inputSchema={"type": "object", "properties": {}, "required": []},
         ),
+        Tool(
+            name="search_sounds",
+            description=(
+                "Search Freesound.org for free-licensed sound effects. "
+                "Returns a list of matching sounds with ID, name, duration, license, and preview URL. "
+                "Use download_sound to save a result locally."
+            ),
+            inputSchema={
+                "type": "object",
+                "required": ["query"],
+                "properties": {
+                    "query":        {"type": "string", "description": "Search keywords, e.g. 'slot machine lever pull'"},
+                    "duration_max": {"type": "number", "default": 5.0, "description": "Max duration in seconds"},
+                    "license":      {"type": "string", "enum": ["cc0", "cc_by", "any"],
+                                     "default": "cc0", "description": "cc0=public domain, cc_by=attribution OK, any=all"},
+                    "results":      {"type": "integer", "default": 5, "description": "Number of results (1–15)"},
+                },
+            },
+        ),
+        Tool(
+            name="download_sound",
+            description=(
+                "Download a Freesound sound effect by ID (from search_sounds results) "
+                "and save it to the output folder as MP3."
+            ),
+            inputSchema={
+                "type": "object",
+                "required": ["sound_id", "filename"],
+                "properties": {
+                    "sound_id": {"type": "integer", "description": "Freesound sound ID"},
+                    "filename": {"type": "string",  "description": "Descriptive filename (no extension)"},
+                },
+            },
+        ),
     ]
 
 
@@ -311,6 +389,40 @@ async def call_tool(name: str, arguments: dict) -> list[TextContent | ImageConte
         lines = [f"{f.name} ({f.stat().st_size // 1024} KB)" for f in files[:20]]
         return [TextContent(type="text",
                             text=f"Output dir: {OUTPUT_DIR}\n\n" + ("\n".join(lines) or "Empty"))]
+
+    if name == "search_sounds":
+        if not FREESOUND_API_KEY:
+            return [TextContent(type="text", text="Error: FREESOUND_API_KEY not set in environment.")]
+        query        = arguments["query"]
+        duration_max = float(arguments.get("duration_max", 5.0))
+        license_filter = arguments.get("license", "cc0")
+        page_size    = min(max(int(arguments.get("results", 5)), 1), 15)
+        try:
+            results = await _freesound_search(query, duration_max, license_filter, page_size)
+            if not results:
+                return [TextContent(type="text", text=f"No results found for '{query}'.")]
+            lines = [f"Freesound results for '{query}':"]
+            for s in results:
+                lines.append(
+                    f"\n  ID: {s['id']}  |  {s['name']}\n"
+                    f"  Duration: {s['duration']:.1f}s  |  License: {s['license']}\n"
+                    f"  Tags: {', '.join(s.get('tags', [])[:6])}\n"
+                    f"  Preview: {s.get('previews', {}).get('preview-hq-mp3', 'N/A')}"
+                )
+            return [TextContent(type="text", text="\n".join(lines))]
+        except Exception as e:
+            return [TextContent(type="text", text=f"Freesound search failed: {e}")]
+
+    if name == "download_sound":
+        if not FREESOUND_API_KEY:
+            return [TextContent(type="text", text="Error: FREESOUND_API_KEY not set in environment.")]
+        sound_id = int(arguments["sound_id"])
+        filename = arguments["filename"]
+        try:
+            path = await _freesound_download(sound_id, filename)
+            return [TextContent(type="text", text=f"Downloaded: {path}")]
+        except Exception as e:
+            return [TextContent(type="text", text=f"Freesound download failed: {e}")]
 
     return [TextContent(type="text", text=f"Unknown tool: {name}")]
 
